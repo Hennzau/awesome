@@ -83,8 +83,8 @@ struct std::formatter<awsm::monitor> {
         return ctx.begin ();
     }
 
-    auto format (const awsm::monitor& obj,
-                 std::format_context& ctx) {
+    static auto format (const awsm::monitor& obj,
+                        std::format_context& ctx) {
         return std::format_to (ctx.out (),
                                "Monitor [{}] : {}x{} @{}",
                                obj.name,

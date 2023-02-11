@@ -1,5 +1,6 @@
 export module awesome.core.loader;
 
+import <chrono>;
 import awesome.std;
 import awesome.core.application;
 
@@ -23,12 +24,23 @@ export namespace awsm {
             template<typename T>
             auto retrieve () const -> const T*;
 
+            auto stop () -> void;
+
+            auto running () -> bool;
+
         private:
 
             awsm::vector<awsm::owner<awsm::application>> m_applications;
             awsm::owner<awsm::logs::console>             m_logger;
             awsm::string                                 m_name;
+
+            bool m_running;
     };
+
+    template<typename... applications>
+    auto loader<applications...>::running () -> bool {
+        return m_running;
+    }
 
     template<typename... applications>
     template<typename T>
@@ -87,6 +99,24 @@ export namespace awsm {
 
     template<typename... applications>
     auto loader<applications...>::run () -> void {
+        m_running = true;
         m_logger->write ("Loader is now running!");
+
+        auto last_time = std::chrono::high_resolution_clock::now ();
+
+        while (m_running) {
+            const auto time       = std::chrono::high_resolution_clock::now ();
+            const auto delta_time = time - last_time;
+            last_time = time;
+
+            for (auto& application: m_applications) {
+                application->update (awsm::as<awsm::f32> (delta_time.count ()) / 1000000000.0f);
+            }
+        }
+    }
+
+    template<typename... applications>
+    auto loader<applications...>::stop () -> void {
+        m_running = false;
     }
 }
